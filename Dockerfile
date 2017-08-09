@@ -24,6 +24,7 @@ RUN  adduser -D -H -u 666  ldap \
   && rm -r /var/lib/openldap/openldap-data/*
 
 COPY etc/* /etc/openldap/
+COPY base/*.ldif.template.sh /etc/openldap/root_data/
 COPY entrypoint.sh /entrypoint.sh
 
 VOLUME ["/etc/openldap/slapd.d", "/var/lib/openldap/"]

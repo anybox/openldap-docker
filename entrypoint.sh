@@ -88,6 +88,32 @@ done
 
 LDAP_ROOT_DC="dc=$(echo "$DOMAIN" | sed -e 's/\./,dc=/g')"
 
+function import_files {
+    # Import ldif files or *.ldif.template.sh files found in a directory
+    # import in an alphabetic order (based on ``ls``)
+    # $1: directory to use
+    # $2: remove directory after import, if value equals "Yes" then
+    directory=$1
+    dir_to_remove=$2
+    if [[ -d "$directory" ]]; then
+
+        for file in `ls $directory*.ldif.template.sh`; do
+            output=${file%.template.sh}
+            echo "generate $output from template: $file"
+            $file -D $LDAP_ROOT_DC -d $DOMAIN -o $ORGANIZATION > $output
+        done
+        for file in `ls $directory*.ldif`; do
+            echo "Import init data: $file"
+            slapadd -d $LDAP_LOG_LEVEL -F /etc/openldap/slapd.d/ -l "$file"
+            # memberof overlay appear to work with lapadd but not slapadd
+            # which require ldap client installed
+            # ldapadd -Y EXTERNAL -H ldapi:/// -f "$file"
+        done
+        if [ "$dir_to_remove" = true ]; then
+            rm -r "$directory"
+        fi
+    fi
+}
 
 if [[ -d "/etc/openldap/slapd.d/cn=config" ]]; then
     echo "LDAP Config volumes already setup!"
@@ -112,41 +138,11 @@ fi
 if [[ -f "/var/lib/openldap/openldap-data/data.mdb" ]]; then
     echo "LDAP DATA volume already exists!"
     # TODO: execute ldap modify according update version mecanism to define
+    # import_files /srv/ldap/init/
 else
-    INIT_VOL=false
-    if [[ -d "/srv/ldap/init" ]]; then
-        INIT_VOL=true
-        for file in `ls /srv/ldap/init/*.ldif.template.sh`; do
-            output=${file%.template.sh}
-            echo "generate $output from template: $file"
-            $file -D $LDAP_ROOT_DC -d $DOMAIN -o $ORGANIZATION > $output
-        done
-        for file in `ls /srv/ldap/init/*.ldif`; do
-            echo "Import init data: $file"
-            slapadd -d $LDAP_LOG_LEVEL -F /etc/openldap/slapd.d/ -l "$file"
-            # memberof overlay appear to work with lapadd but not slapadd
-            # which require ldap client installed
-            # ldapadd -Y EXTERNAL -H ldapi:/// -f "$file"
-        done
-    fi
-
-    if [[ -d "/srv/ldap/demo" ]]; then
-        INIT_VOL=true
-        for file in `ls /srv/ldap/demo/*.ldif.template.sh`; do
-            output=${file%.template.sh}
-            echo "generate $output from template: $file"
-            $file -D $LDAP_ROOT_DC -d $DOMAIN -o $ORGANIZATION > $output
-        done
-        for file in `ls /srv/ldap/demo/*.ldif`; do
-            echo "Import demo data: $file"
-            slapadd -d $LDAP_LOG_LEVEL -F /etc/openldap/slapd.d/ -l "$file"
-        done
-    fi
-
-    if [[ INIT_VOL ]]; then
-        echo "It's highly recommanded to restart your container in production"\
-             "without init and demo volumes"
-    fi
+    import_files /etc/openldap/root_data/ true
+    import_files /srv/ldap/init/ false
+    import_files /srv/ldap/demo/ false
 fi
 
 echo "Make slapd.d own and only usable by ldap user"

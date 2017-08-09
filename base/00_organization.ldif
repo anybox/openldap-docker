@@ -1,0 +1,50 @@
+dn: dc=ci,dc=example,dc=org
+objectclass: dcObject
+objectclass: organization
+o: Example
+dc: ci
+
+dn: ou=people,dc=ci,dc=example,dc=org
+objectClass: organizationalUnit
+ou: people
+description: Physical people that require an account in LDAP
+
+dn: uid=admin,ou=people,dc=ci,dc=example,dc=org
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: Admin TO REMOVE
+displayName: Admin TO REMOVE
+sn: Admin TO REMOVE
+givenName: Admin TO REMOVE
+o: Example
+uid: admin
+userPassword: admin
+pwdReset: FALSE
+
+dn: ou=groups,dc=ci,dc=example,dc=org
+objectClass: organizationalUnit
+ou: groups
+description: Group list to create group of people
+
+dn: cn=ldap_admin,ou=groups,dc=ci,dc=example,dc=org
+objectclass: groupOfNames
+cn: ldap_admin
+description: Ldap user administrators (groups and people)
+member: uid=administrator,ou=people,dc=ci,dc=example,dc=org
+
+# Technical account required by applications
+dn: ou=applications,dc=ci,dc=example,dc=org
+objectClass: organizationalUnit
+ou: applications
+description:
+ liste des applications ayant un compte LDAP pour effectuer des
+ requêtes. Par défaut ces utilisateurs ont accès en lecture et search tout
+ les inetOrgPerson lié aux groupes dont l'entrée InetOrgPerson de l'application
+ elle même fait partie.
+
+dn: ou=policies,dc=ci,dc=example,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: policies
+

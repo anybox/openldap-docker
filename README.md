@@ -159,3 +159,17 @@ TODO:
 - [ ] test upgrade version
 - [ ] http://www.openldap.org/doc/admin24/security.html
 - [ ] automate renew LE CA
+
+# Tips:
+
+## Generate ssha password
+
+You can securly store password with ssha encryption. ``slappasswd``
+can generate that hash for you to use it securly in you ldif files.
+
+A way to do is by running ``slappasswd`` using that same image:
+
+```bash
+docker run -it --rm petrusv/docker_ldap slappasswd -s MySecrets
+{SSHA}TYtweERxzym/BomeU820EOqoIxJ2X+oT
+```
