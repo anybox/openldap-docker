@@ -50,7 +50,7 @@ if [[ ! $LDAP_PASSWORD ]]; then
     exit 1
 fi
 
-if [[ $CA_PATH ]]; then
+if [[ -f $CA_PATH ]]; then
     CA_PATH="olcTLSCACertificateFile: $CA_PATH"
 else
     CA_PATH="# olcTLSCACertificateFile: No CA provided"

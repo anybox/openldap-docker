@@ -17,7 +17,7 @@ LDAP_LOG_LEVEL=${LDAP_LOG_LEVEL:-64}
 DOMAIN=${DOMAIN:-example.com}
 ORGANIZATION=${ORGANIZATION:-"Example corporation"}
 LDAP_SUB_DOMAIN=${LDAP_SUB_DOMAIN:-ldap}
-LDAP_CA_CERTIFICATE_PATH=${LDAP_CA_CERTIFICATE_PATH:-}
+LDAP_CA_CERTIFICATE_PATH=${LDAP_CA_CERTIFICATE_PATH:-false}
 LDAP_CERTIFICATE_PATH=${LDAP_CERTIFICATE_PATH:-/ssl/$LDAP_SUB_DOMAIN.$DOMAIN.crt}
 LDAP_CERTIFICATE_KEY_PATH=${LDAP_CERTIFICATE_KEY_PATH:-/ssl/$SUB_DOMAIN.$DOMAIN.key}
 
@@ -122,8 +122,8 @@ else
     /etc/openldap/slapd.ldif.template.sh \
         -C $LDAP_CERTIFICATE_PATH \
         -K $LDAP_CERTIFICATE_KEY_PATH \
-        -A $LDAP_CA_CERTIFICATE_PATH \
-        -P $LDAP_ROOT_PASSWORD > /etc/openldap/slapd.ldif
+        -P $LDAP_ROOT_PASSWORD \
+        -A $LDAP_CA_CERTIFICATE_PATH > /etc/openldap/slapd.ldif
     /etc/openldap/lmdb.ldif.template.sh \
         -D $LDAP_ROOT_DC >> /etc/openldap/slapd.ldif
     /etc/openldap/overlay_settings.ldif.template.sh \
