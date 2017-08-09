@@ -12,13 +12,12 @@ ENV OPENLDAP_VERSION 2.4.44-r5
 # NOTE: You can add openldap-clients for testing purpose
 # NOTE: following package are require for building onpenldap:
 # openssl gnutls nss cyrus-sasl krb5
-RUN  apk update \
-  && adduser -D -H -u 666  ldap \
-  && apk add openldap=$OPENLDAP_VERSION \
-  && rm -rf /var/cache/apk/*
-
-# TODO: remove this extra RUN, I use it to get cache benefice wile developing
-RUN  rm /etc/openldap/*.default \
+RUN  adduser -D -H -u 666  ldap \
+  && apk add --update \
+             openldap=$OPENLDAP_VERSION \
+             dumb-init \
+  && rm -rf /var/cache/apk/* \
+  && rm /etc/openldap/*.default \
   && rm /etc/openldap/*.example \
   && rm /etc/openldap/*.ldif \
   && rm /etc/openldap/*.conf \
@@ -35,4 +34,5 @@ RUN  chmod 500 /etc/openldap/*.ldif.template.sh \
 
 EXPOSE 389 636
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["/entrypoint.sh"]

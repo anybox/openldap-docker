@@ -155,4 +155,5 @@ chmod -R 500 /etc/openldap/slapd.d/
 chown ldap:ldap -R /var/lib/openldap
 
 echo "Run slapd..."
-slapd -d $LDAP_LOG_LEVEL -F /etc/openldap/slapd.d -u ldap -g ldap -h "ldaps://"
+# exec slapd to give it PID 1 (otherwise signals are not sent properly)
+exec slapd -d $LDAP_LOG_LEVEL -F /etc/openldap/slapd.d -u ldap -g ldap -h "ldaps://"

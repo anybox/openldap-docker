@@ -152,14 +152,10 @@ TODO:
 - [ ] document certificate access uid ldap == 666
 - [ ] manage & document active/inactive users
 - [ ] Add volumes? json? to init user data the first time
-- [ ] allow runing batch createion
-- [ ] test password policies?
-- [ ] add a tool to generate init user/application/group accounts
+- [ ] allow runing batch creation
+- [ ] test password policies
+- [ ] add a tools to generate init user/application/group accounts
 - [ ] test restarting CR / test with mapped volume
 - [ ] test upgrade version
 - [ ] http://www.openldap.org/doc/admin24/security.html
-- [ ] retrouver la ressource qui parle de lanceur d'application dans
-      docker
-- [ ] automatiser le renouvellement de certificat avec let's encrypt
-      + restart openldap
-
+- [ ] automate renew LE CA
