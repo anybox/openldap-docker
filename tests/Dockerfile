@@ -9,7 +9,7 @@ RUN apk add --update \
 
 WORKDIR /usr/src/app
 
-COPY . /usr/src/app/
+COPY src/ /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN chmod 700 /usr/src/app/entrypoint.sh

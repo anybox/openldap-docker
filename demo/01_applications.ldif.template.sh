@@ -49,4 +49,37 @@ sn: fakeapp2 technical user
 cn: fakeapp2 technical user
 uid: fakeapp2
 userPassword: fakeapp2PASS
+
+dn: uid=tapp-people-admin,ou=applications,$ROOT_LDAP_DC
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+sn: technical people admin
+cn: technical people admin
+uid: tapp-people-admin
+userPassword: tapp-people-adminPASS
+#memberOf: cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC
+
+dn: uid=tapp-apps-admin,ou=applications,$ROOT_LDAP_DC
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+sn: technical apps admin
+cn: technical apps admin
+uid: tapp-apps-admin
+userPassword: tapp-apps-adminPASS
+#memberOf: cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC
+#memberOf: cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC
+
+dn: uid=tapp-admin,ou=applications,$ROOT_LDAP_DC
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+sn: technical full admin
+cn: technical full admin
+uid: tapp-admin
+userPassword: tapp-adminPASS
+#memberOf: cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC
+#memberOf: cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC
+
 EOF

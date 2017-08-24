@@ -110,6 +110,16 @@ function run_ldap {
         -e LDAP_SUB_DOMAIN="$SUB_DOMAIN" \
         $PORTS \
         --name $LDAP_CT $LDAP_IMAGE:$CURRENT_BUILD_LDAP_TAG
+
+    # Make sure ldap is ready
+    sleep 2
+    # Make sure ldap is running
+    if [[ `docker inspect -f {{.State.Running}} $LDAP_CT` != "true" ]]; then
+        docker logs $LDAP_CT
+        echo "Ldap server is not running, something goes wrong,
+              read above Docker container $LDAP_CT logs"
+        exit 1
+    fi
 }
 
 function run_tests {

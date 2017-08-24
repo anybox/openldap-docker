@@ -47,19 +47,48 @@ if [[ ! $DOMAIN ]]; then
 fi
 
 cat << EOF
-dn: uid=tadministrator,ou=people,$ROOT_LDAP_DC
+dn: uid=tadmin-people,ou=people,$ROOT_LDAP_DC
 objectClass: person
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
-cn: Test Administrator
-sn: Administrator
-givenName: Test admin
-mail: tadministrator@$DOMAIN
+cn: Test People Administrator
+sn: Test People Administrator
+givenName: Test People Administrator
+mail: tadmin-people@$DOMAIN
 mobile: +33600000000
 o: $ORGANIZATION
-uid: tadministrator
-userPassword: tadministratorPASS
-memberOf: cn=fakeapp,ou=groups,$ROOT_LDAP_DC
+uid: tadmin-people
+userPassword: tadmin-peoplePASS
+#memberOf: cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC
+
+dn: uid=tadmin-apps,ou=people,$ROOT_LDAP_DC
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: Test Applications Administrator
+sn: Test Applications Administrator
+givenName: Test admin apps
+mail: tadmin-apps@$DOMAIN
+mobile: +33600000000
+o: $ORGANIZATION
+uid: tadmin-apps
+userPassword: tadmin-appsPASS
+#memberOf: cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC
+
+dn: uid=tadmin,ou=people,$ROOT_LDAP_DC
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: Test Applications & People Administrator
+sn: Test Applications & People Administrator
+givenName: Test admin
+mail: tadmin@$DOMAIN
+mobile: +33600000000
+o: $ORGANIZATION
+uid: tadmin
+userPassword: tadminPASS
+#memberOf: cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC
+#memberOf: cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC
 
 dn: uid=tuser,ou=people,$ROOT_LDAP_DC
 objectClass: person

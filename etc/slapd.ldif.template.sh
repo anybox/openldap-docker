@@ -3,7 +3,7 @@
 set -e
 
 USAGE="Usage: $0 -C Certificate path -K Certificate key file
-                 -P Ldap root password [-A CA path] [-V TLS Verify client]
+                 [-A CA path] [-V TLS Verify client]
                  [-S CIPHER suite] [-h]
 
 Template to generate slapd ldif config file
@@ -11,7 +11,6 @@ Template to generate slapd ldif config file
 Options:
     -C Certificate          Certificate file
     -K Certificate key      Certificate key file
-    -P Ldap root password   The ldap root admin password
     -A CA path              Certificate authority in case of self signed
                             certificate (default: None)
     -V TLS Verify Client    (default: never)
@@ -20,12 +19,11 @@ Options:
 "
 
 
-while getopts "C:K:P:A:V:h" OPTION
+while getopts "C:K:A:V:h" OPTION
 do
     case $OPTION in
         C) CERTIF_PATH=$OPTARG;;
         K) CERTIF_KEY_PATH=$OPTARG;;
-        P) LDAP_PASSWORD=$OPTARG;;
         A) CA_PATH=$OPTARG;;
         V) TLS_VERIF_CLIENT=$OPTARG;;
         S) CIPHER=$OPTARG;;
@@ -43,10 +41,6 @@ if [[ ! $CERTIF_PATH ]]; then
 fi
 if [[ ! $CERTIF_KEY_PATH ]]; then
     echo "Missing certificat key path while generating slapd ldif template" >&2
-    exit 1
-fi
-if [[ ! $LDAP_PASSWORD ]]; then
-    echo "LDAP PASSWORD is required while generating slapd ldif template" >&2
     exit 1
 fi
 

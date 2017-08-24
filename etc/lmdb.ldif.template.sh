@@ -2,19 +2,21 @@
 
 set -e
 
-USAGE="Usage: $0 -D Root LDAP DC [-h]
+USAGE="Usage: $0 -D Root LDAP DC -P Ldap root password [-h]
 
 Template to generate slapd config file
 
 Options:
-    -D ROOT LDAP DC     The root ldap dc, should looks like dc=example,dc=com
-    -h                  Show this help.
+    -D ROOT LDAP DC       The root ldap dc, should looks like dc=example,dc=com
+    -P Ldap root password The ldap root admin password
+    -h                    Show this help.
 "
 
-while getopts "D:h" OPTION
+while getopts "D:P:h" OPTION
 do
     case $OPTION in
         D) ROOT_LDAP_DC=$OPTARG;;
+        P) LDAP_PASSWORD=$OPTARG;;
         h) echo "$USAGE";
            exit;;
         *) echo "Unknown parameter while generating lmdb ldif template" >&2;
@@ -25,6 +27,10 @@ done
 
 if [[ ! $ROOT_LDAP_DC ]]; then
     echo "Root LDAP DC is required while generating lmdb ldif template" >&2
+    exit 1
+fi
+if [[ ! $LDAP_PASSWORD ]]; then
+    echo "LDAP PASSWORD is required while generating slapd ldif template" >&2
     exit 1
 fi
 
@@ -50,7 +56,7 @@ olcDbIndex: uid         eq,sub
 # Cleartext passwords, especially for the rootdn, should
 # be avoided.  See slappasswd(8) and slapd-config(5) for details.
 # Use of strong authentication encouraged.
-olcRootPW: secret
+olcRootPW: $LDAP_PASSWORD
 # You may want to read the doc before update this file
 # http://www.openldap.org/doc/admin24/access-control.html
 # This directive allows users to modify their own entries if security
@@ -67,13 +73,14 @@ olcRootPW: secret
 olcAccess: {100}
   to dn.subtree="ou=people,$ROOT_LDAP_DC" attrs=userPassword
     by self write
-    by group.exact="cn=ldap_admin,ou=groups,$ROOT_LDAP_DC" write
+    by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" write
     by anonymous auth
     by * none
 # application users and ldap admin group members can not edit user
 # application's password
 olcAccess: {150}
   to dn.subtree="ou=applications,$ROOT_LDAP_DC" attrs=userPassword
+    by group.exact="cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC" write
     by self read
     by anonymous auth
     by * none
@@ -81,7 +88,7 @@ olcAccess: {150}
 # group attribute instead. Application can read memberOf attribute
 olcAccess: {200}
   to attrs=memberOf
-    by group.exact="cn=ldap_admin,ou=groups,$ROOT_LDAP_DC" read
+    by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" read
     by dn.subtree="ou=applications,$ROOT_LDAP_DC" read
     by * none
 # allow ldap admin to create/write on people sub-tree
@@ -90,28 +97,33 @@ olcAccess: {200}
 # to the revelant group
 olcAccess: {300}
   to dn.subtree="ou=people,$ROOT_LDAP_DC"
-    by group.exact="cn=ldap_admin,ou=groups,$ROOT_LDAP_DC" write
+    by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" write
     by dn.subtree="ou=applications,$ROOT_LDAP_DC" read
     by self read
     by * none
-# Allow ldap admin group members to edit group member attributes
+olcAccess: {350}
+  to dn.subtree="ou=applications,$ROOT_LDAP_DC"
+    by group.exact="cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC" write
+    by self read
+    by * none
+# Allow ldap admin to manage groups
 # Application can read groups as well
 olcAccess: {400}
-  to dn.subtree="ou=groups,$ROOT_LDAP_DC" attrs=member
-    by group.exact="cn=ldap_admin,ou=groups,$ROOT_LDAP_DC" write
+  to dn.subtree="ou=groups,$ROOT_LDAP_DC"
+    by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" write
     by dn.subtree="ou=applications,$ROOT_LDAP_DC" read
     by * none
-# Application  and ldap admin can read groups
-olcAccess: {500}
-  to dn.subtree="ou=groups,$ROOT_LDAP_DC"
-    by group.exact="cn=ldap_admin,ou=groups,$ROOT_LDAP_DC" write
-    by dn.subtree="ou=applications,$ROOT_LDAP_DC" read
+# No one can access to policies they should be test and change from the
+# main configuration to avoid create security hole
+olcAccess: {600}
+  to dn.subtree="ou=policies,$ROOT_LDAP_DC"
     by * none
 # Allow ldap admin group members to read/write ,$ROOT_LDAP_DC sub tree
 # to helps admins task (display the whole tree in Apache active Directory)
-olcAccess: {600}
+olcAccess: {700}
   to dn.subtree="$ROOT_LDAP_DC"
-    by group.exact="cn=ldap_admin,ou=groups,$ROOT_LDAP_DC" write
+    by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" read
+    by group.exact="cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC" read
     by * none
 
 EOF

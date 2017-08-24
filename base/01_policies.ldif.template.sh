@@ -34,7 +34,6 @@ objectClass: pwdPolicy
 objectClass: person
 objectClass: top
 cn: default
-cn: default
 sn: Default password policy
 pwdAllowUserChange: TRUE
 pwdAttribute: userPassword

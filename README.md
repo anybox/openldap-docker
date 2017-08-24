@@ -39,22 +39,23 @@ the following tree.
 ```
 dc: com
 ├── dc=example
-│   ├── cn=admin                # Root ldap account
-│   ├── ou=people               # Where users are saved
-│   │   ├── uid=admin           # Default user administrator
+│   ├── cn=admin                  # Root ldap account
+│   ├── ou=people                 # Where users are saved
+│   │   ├── uid=admin             # Default user administrator
 │   │   ├── uid=user 1
 │   │   ├── uid=...
 │   │   └── uid=user n
-│   ├── groups                  # Group definition
-│   │   ├── cn=ldap_admin       # Ldap account administrator
+│   ├── groups                    # Group definition
+│   │   ├── cn=ldap_people_admin  # Ldap people administrator
+│   │   ├── cn=ldap_apps_admin    # Ldap applications administrator
 │   │   ├── cn=group 1
 │   │   ├── cn=...
 │   │   └── cn=group n
-│   ├── applications            # Application/service account
+│   ├── applications              # Application/service account
 │   │   ├── uid=app 1
 │   │   ├── uid=...
 │   │   └── uid=app2 n
-│   ├── policies                # Ldap policies (about passwords)
+│   ├── policies                  # Ldap policies (about passwords)
 │   │   └── cn=default
 ```
 
@@ -62,7 +63,7 @@ Bellow the list of user me may met:
 
 * Anonymous
 * User account
-* Ldap adminstrator (those linked to ldap_admin group)
+* Ldap adminstrator (those linked to ldap_people_admin group)
 * The root ldap administrator
 * Application/service user account & Groups
 
@@ -90,7 +91,7 @@ Users that administrate following entries in ldap:
 
 
 Those users must have an entry in ``ou=people,dc=example,dc=com``
-and be a member of ``cn=ldap_admin,ou=groups,dc=example,dc=com``
+and be a member of ``cn=ldap_people_admin,ou=groups,dc=example,dc=com``
 group.
 
 
@@ -145,11 +146,13 @@ TODO: handle version number diff to handle upgrade between versions
 
 TODO:
 
-
+- [ ] config and test 1 master multiple slaves
 - [ ] tool to generate or add application entry (or make possible to
       administrator to setup application, or add application admin
       group)
-- [ ] document certificate access uid ldap == 666
+- [ ] test application link to admin groups
+- [ ] let set admin name & password throught env variables
+- [ ] document certificate access uid:gid (ldap == 666)
 - [ ] manage & document active/inactive users
 - [ ] Add volumes? json? to init user data the first time
 - [ ] allow runing batch creation
@@ -159,6 +162,7 @@ TODO:
 - [ ] test upgrade version
 - [ ] http://www.openldap.org/doc/admin24/security.html
 - [ ] automate renew LE CA
+- [ ] split tests in multiple python files
 
 # Tips:
 

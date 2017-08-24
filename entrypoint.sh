@@ -8,12 +8,15 @@
 # ulimit -n 8192
 
 set -e
+set -x
 
 PASS=`< /dev/urandom tr -dc _A-Za-z0-9~\&\(\)\^$%,?\;. | head -c${1:-32};echo`
 SSHA_PASS=`slappasswd -ns $PASS`
 
 LDAP_ROOT_PASSWORD=${LDAP_ROOT_PASSWORD:-$SSHA_PASS}
 LDAP_LOG_LEVEL=${LDAP_LOG_LEVEL:-64}
+LDAP_DEFAULT_ADMIN_UID=${LDAP_DEFAULT_ADMIN_UID:-"administrator"}
+LDAP_DEFAULT_ADMIN_PASSWORD=${LDAP_DEFAULT_ADMIN_PASSWORD:-`slappasswd -ns "Change Me!"`}
 DOMAIN=${DOMAIN:-example.com}
 ORGANIZATION=${ORGANIZATION:-"Example corporation"}
 LDAP_SUB_DOMAIN=${LDAP_SUB_DOMAIN:-ldap}
@@ -22,6 +25,7 @@ LDAP_CERTIFICATE_PATH=${LDAP_CERTIFICATE_PATH:-/ssl/$LDAP_SUB_DOMAIN.$DOMAIN.crt
 LDAP_CERTIFICATE_KEY_PATH=${LDAP_CERTIFICATE_KEY_PATH:-/ssl/$SUB_DOMAIN.$DOMAIN.key}
 
 USAGE="Usage: $0 [-C COMMAND [params [params [...]]] [-P Root Password] [-h]
+                 [-u Default administrator uid] [-p Default admin password]
                  [-L LOG_LEVEL] [-a CA_FILE_PATH] [-D Domain] [-d sub-domain]
                  [-O Organization]
 Wrapper entry point script to setup and run OpenLdap
@@ -40,6 +44,11 @@ Options:
                     This can be set using environment LDAP_ROOT_PASSWORD.
                     use slappasswd -s secret to generate a SSHA password and use
                     the whole output (ie: {SSHA}TjUaNY5sTf//mwqKl3WeI37NKsa5cTa9)
+    -u ADMIN UID    Default ldap user administrator uid (will be under
+                    uid=$LDAP_DEFAULT_ADMIN_UID,ou=people,dc=example,dc=com)
+                    (default value: $LDAP_DEFAULT_ADMIN_UID)
+    -p ADMIN PASS   Password for given admin uid $LDAP_DEFAULT_ADMIN_UID
+                    (default: $LDAP_DEFAULT_ADMIN_PASSWORD)
     -L LOG LEVEL    ldap deamon log level
                     Can also be set through environement variable LDAP_LOG_LEVEL
                     (default: $LDAP_LOG_LEVEL)
@@ -59,7 +68,7 @@ Options:
 "
 
 
-while getopts "C:P:L:a:c:k:d:D:O:h" OPTION
+while getopts "C:P:L:a:c:k:d:D:O:p:u:h" OPTION
 do
     case $OPTION in
         C) if [[ $1 == "-C" ]]; then
@@ -71,6 +80,8 @@ do
            echo "$USAGE";
            exit 1;;
         P) LDAP_ROOT_PASSWORD=$OPTARG;;
+        u) LDAP_DEFAULT_ADMIN_UID=$OPTARG;;
+        p) LDAP_DEFAULT_ADMIN_PASSWORD=$OPTARG;;
         D) DOMAIN=$OPTARG;;
         O) ORGANIZATION=$OPTARG;;
         d) LDAP_SUB_DOMAIN=$OPTARG;;
@@ -100,7 +111,11 @@ function import_files {
         for file in `ls $directory*.ldif.template.sh`; do
             output=${file%.template.sh}
             echo "generate $output from template: $file"
-            $file -D $LDAP_ROOT_DC -d $DOMAIN -o $ORGANIZATION > $output
+            $file -D "$LDAP_ROOT_DC" \
+                  -d "$DOMAIN" \
+                  -o "$ORGANIZATION" \
+                  -u "$LDAP_DEFAULT_ADMIN_UID" \
+                  -p "$LDAP_DEFAULT_ADMIN_PASSWORD" > $output
         done
         for file in `ls $directory*.ldif`; do
             echo "Import init data: $file"
@@ -122,9 +137,9 @@ else
     /etc/openldap/slapd.ldif.template.sh \
         -C $LDAP_CERTIFICATE_PATH \
         -K $LDAP_CERTIFICATE_KEY_PATH \
-        -P $LDAP_ROOT_PASSWORD \
         -A $LDAP_CA_CERTIFICATE_PATH > /etc/openldap/slapd.ldif
     /etc/openldap/lmdb.ldif.template.sh \
+        -P $LDAP_ROOT_PASSWORD \
         -D $LDAP_ROOT_DC >> /etc/openldap/slapd.ldif
     /etc/openldap/overlay_settings.ldif.template.sh \
         -D $LDAP_ROOT_DC  >> /etc/openldap/slapd.ldif
