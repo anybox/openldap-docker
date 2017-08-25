@@ -24,11 +24,12 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             return (
                 con.modify(
                     USER_DN,
-                    {'memberof': [(MODIFY_REPLACE, [GROUP_DN])]}),
+                    {'memberof': [(MODIFY_REPLACE, [GROUP_DN])]}
+                ),
                 con.result
             )
 
-        def remove_member_of(con, context, data):
+        def remove_member_of():
             with ldap_connection(
                     dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
             ) as con:
@@ -42,6 +43,13 @@ class TestLdapMemberOfOverlay(LdapTestCase):
                     }
                 )
 
+        def assertMemberNotSet(con, context, data):
+            con.search(
+                GROUP_DN, '(objectClass=groupOfNames)', attributes=['member']
+            )
+            self.assertFalse(USER_DN in con.entries[0].member.value)
+            remove_member_of()
+
         test_suite = {
             'anonymous': {'assert': self.assertFalse, },
             'user': {'assert': self.assertFalse, },
@@ -50,7 +58,9 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             'user-admin': {'assert': self.assertFalse, },
             'admin': {
                 'assert': self.assertTrue,  # ok it's fine if ldap admin do it
-                'run_after_test': remove_member_of,
+                # This is to detect if at some point it's fine to edit memberof
+                # directly
+                'run_after_test': assertMemberNotSet,
             },
             'app': {'assert': self.assertFalse, },
             'app-people-admin': {'assert': self.assertFalse, },
@@ -85,7 +95,7 @@ class TestLdapMemberOfOverlay(LdapTestCase):
                 con.result
             )
 
-        def remove_member_of(con, context, data):
+        def remove_member_of():
             with ldap_connection(
                     dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
             ) as con:
@@ -99,6 +109,13 @@ class TestLdapMemberOfOverlay(LdapTestCase):
                     }
                 )
 
+        def assertMemberNotSet(con, context, data):
+            con.search(
+                GROUP_DN, '(objectClass=groupOfNames)', attributes=['member']
+            )
+            self.assertFalse(USER_DN in con.entries[0].member.value)
+            remove_member_of()
+
         test_suite = {
             'anonymous': {'assert': self.assertFalse, },
             'user': {'assert': self.assertFalse, },
@@ -107,7 +124,9 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             'user-admin': {'assert': self.assertFalse, },
             'admin': {
                 'assert': self.assertTrue,  # ok it's fine if ldap admin do it
-                'run_after_test': remove_member_of,
+                # This is to detect if at some point it's fine to edit memberof
+                # directly
+                'run_after_test': assertMemberNotSet,
             },
             'app': {'assert': self.assertFalse, },
             'app-people-admin': {'assert': self.assertFalse, },
@@ -121,93 +140,278 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             "testing to update user cn attribute"
         )
 
-    def test_member_integrity(self):
-        """Todo: test memberOf overlay
-        http://www.openldap.org/doc/admin24/overlays.html
-        #Reverse%20Group%20Membership%20Maintenance
+    def test_rename_user_entry(self):
+        """Test renaming an user entry make sure group get upadeted
 
-        + TODO: make sure ldap administrator can add member and CAN NOT ADD
-        memberOf, according manual test I've done integrity works only when
-        adding member not the reverse entry.
-
-        + TODO: test memberOf on a replicat: as long overlays can be configured
-        differently on replicates server we should find some way to test
-        replicat the day we start to use them
+        This test ensure `refint overlay <http://www.openldap.org/doc/
+        admin24/overlays.html#Referential%20Integrity>`_ is properly set
         """
         group_cn = "group-%s" % uuid4()
         group_dn = "cn=%s,ou=groups,%s" % (group_cn, ROOT_DC)
-        group2_cn = "group-%s" % uuid4()
-        group2_dn = "cn=%s,ou=groups,%s" % (group2_cn, ROOT_DC)
         user1_uid = "user-%s" % uuid4()
         user1_dn = "uid=%s,ou=people,%s" % (user1_uid, ROOT_DC)
-        user2_uid = "user-%s" % uuid4()
-        user2_dn = "uid=%s,ou=people,%s" % (user2_uid, ROOT_DC)
-        app_uid = "app-%s" % uuid4()
-        app_dn = "uid=%s,ou=applications,%s" % (app_uid, ROOT_DC)
+        user2_uid = "uid=user-%s" % uuid4()
+        user2_dn = "%s,ou=people,%s" % (user2_uid, ROOT_DC)
 
-        def prepare():
+        def prepare(con, context, data):
             self.create_user(user1_uid, user1_dn)
-            self.create_user(user2_uid, user2_dn)
-            self.create_app(app_uid, app_dn)
             self.create_group(group_cn, group_dn, [user1_dn, ])
-            self.create_group(group2_cn, group2_dn, [app_dn, ])
 
         def clean():
             with ldap_connection(
                     dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
             ) as root_con:
-                root_con.delete(group2_dn)
-                root_con.delete(group_dn)
-                root_con.delete(app_dn)
                 root_con.delete(user1_dn)
                 root_con.delete(user2_dn)
+                root_con.delete(group_dn)
 
-        self.fail()
+        self.addCleanup(clean)
 
-    def test_memberof_rename_user_entry(self):
-        """This test ensure `refint overlay <http://www.openldap.org/doc/
+        def test_rename(con, context, data):
+                return con.modify_dn(user1_dn, user2_uid), con.result
+
+        def assertGroupMemeberUpdated(con, context, data):
+            con.search(
+                group_dn, '(objectClass=groupOfNames)', attributes=['member']
+            )
+            self.assertTrue(user2_dn in con.entries[0].member.value)
+            self.assertTrue(user1_dn not in con.entries[0].member.value)
+            clean()
+
+        test_suite = {
+            'anonymous': None,
+            'user': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'user-people-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'user-apps-admin': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'user-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'app': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'app-people-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'app-apps-admin': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'app-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+        }
+        self.run_case(
+            test_rename,
+            test_suite,
+            "testing member integrity while renaming user entry"
+        )
+
+    def test_remove_user_entry(self):
+        """Test remove an user entry make sure group get upadeted
+        This test ensure `refint overlay <http://www.openldap.org/doc/
         admin24/overlays.html#Referential%20Integrity>`_ is properly set
 
         while moving user or removing users, make sure groups get update
         """
-        with ldap_connection(
-                dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
-        ) as con:
-            user_dn = self.assertCreateLdapUser(con, self.assertTrue)
-            group_dn = self.assertCreateLdapGroup(
-                con, self.assertTrue, members=[user_dn]
-            )
-        with ldap_connection(dn=self.user_dn, password=self.user_pass) as con:
-            new_uid = "uid=user-%s" % uuid4()
-            new_dn = '%s,ou=people,%s' % (new_uid, ROOT_DC)
-            self.assertTrue(con.modify_dn(user_dn, new_uid), con.result)
-            con.search(
-                group_dn, '(objectClass=groupOfNames)', attributes=['member']
-            )
-            self.assertTrue(new_dn in con.entries[0].member.value)
-            self.assertTrue(user_dn not in con.entries[0].member.value)
+        group_cn = "group-%s" % uuid4()
+        group_dn = "cn=%s,ou=groups,%s" % (group_cn, ROOT_DC)
+        user1_uid = "user-%s" % uuid4()
+        user1_dn = "uid=%s,ou=people,%s" % (user1_uid, ROOT_DC)
+        user2_uid = "user-%s" % uuid4()
+        user2_dn = "uid=%s,ou=people,%s" % (user2_uid, ROOT_DC)
 
-    def test_memberof_remove_user_entry(self):
-        """This test ensure `refint overlay <http://www.openldap.org/doc/
-        admin24/overlays.html#Referential%20Integrity>`_ is properly set
+        def prepare(con, context, data):
+            self.create_user(user1_uid, user1_dn)
+            self.create_user(user2_uid, user2_dn)
+            self.create_group(group_cn, group_dn, [user1_dn, user2_dn, ])
 
-        while moving user or removing users, make sure groups get update
-        """
-        with ldap_connection(
-                dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
-        ) as con:
-            user_dn = self.assertCreateLdapUser(con, self.assertTrue)
-            group_dn = self.assertCreateLdapGroup(
-                con,
-                self.assertTrue,
-                members=[
-                    user_dn,
-                    'uid=tuser,ou=people,' + ROOT_DC,
-                ]
-            )
-        with ldap_connection(dn=self.user_dn, password=self.user_pass) as con:
-            self.assertTrue(con.delete(user_dn), con.result)
+        def clean():
+            with ldap_connection(
+                    dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
+            ) as root_con:
+                root_con.delete(user1_dn)
+                root_con.delete(user2_dn)
+                root_con.delete(group_dn)
+
+        self.addCleanup(clean)
+
+        def test_delete_user(con, context, data):
+            return con.delete(user1_dn), con.result
+
+        def assertGroupMemeberUpdated(con, context, data):
             con.search(
-                group_dn, '(objectClass=groupOfNames)', attributes=['member']
+                group_dn, '(objectClass=groupOfNames)',
+                attributes=['member']
             )
-            self.assertTrue(user_dn not in con.entries[0].member.value)
+            self.assertTrue(user1_dn not in con.entries[0].member.value)
+            self.assertTrue(user2_dn in con.entries[0].member.value)
+            clean()
+
+        test_suite = {
+            'anonymous': None,
+            'user': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'user-people-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'user-apps-admin': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'user-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'app': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'app-people-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+            'app-apps-admin': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'app-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertGroupMemeberUpdated,
+            },
+        }
+        self.run_case(
+            test_delete_user,
+            test_suite,
+            "testing member integrity while deleting an user entry"
+        )
+
+    def test_remove_group(self):
+        group_cn = "group-%s" % uuid4()
+        group_dn = "cn=%s,ou=groups,%s" % (group_cn, ROOT_DC)
+        group2_cn = "group-%s" % uuid4()
+        group2_dn = "cn=%s,ou=groups,%s" % (group_cn, ROOT_DC)
+        user1_uid = "user-%s" % uuid4()
+        user1_dn = "uid=%s,ou=people,%s" % (user1_uid, ROOT_DC)
+
+        def prepare(con, context, data):
+            self.create_user(user1_uid, user1_dn)
+            self.create_group(group_cn, group_dn, [user1_dn, ])
+            self.create_group(group2_cn, group2_dn, [user1_dn, ])
+
+        def clean():
+            with ldap_connection(
+                    dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
+            ) as root_con:
+                root_con.delete(user1_dn)
+                root_con.delete(group_dn)
+                root_con.delete(group2_dn)
+
+        self.addCleanup(clean)
+
+        def test_delete_group(con, context, data):
+            return con.delete(group_dn), con.result
+
+        def assertUserMemeberOfUpdated(con, context, data):
+            con.search(
+                user1_dn, '(objectClass=inetOrgPerson)',
+                attributes=['memberof']
+            )
+            self.assertTrue(group_dn not in con.entries[0].memberof.value)
+            self.assertTrue(group2_dn in con.entries[0].memberof.value)
+            clean()
+
+        test_suite = {
+            'anonymous': None,
+            'user': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'user-people-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertUserMemeberOfUpdated,
+            },
+            'user-apps-admin': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'user-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertUserMemeberOfUpdated,
+            },
+            'admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertUserMemeberOfUpdated,
+            },
+            'app': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'app-people-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertUserMemeberOfUpdated,
+            },
+            'app-apps-admin': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
+            'app-admin': {
+                'assert': self.assertTrue,
+                'run_before_test': prepare,
+                'run_after_test': assertUserMemeberOfUpdated,
+            },
+        }
+        self.run_case(
+            test_delete_group,
+            test_suite,
+            "testing member integrity while deleting an user entry"
+        )

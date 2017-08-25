@@ -78,14 +78,16 @@ dn: uid=$ADMIN_UID,ou=people,$ROOT_LDAP_DC
 objectClass: person
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
-cn: Admin TO REMOVE
-displayName: Admin TO REMOVE
-sn: Admin TO REMOVE
-givenName: Admin TO REMOVE
+cn: Admin $ADMIN_UID
+displayName: Admin $ADMIN_UID
+sn: Admin $ADMIN_UID
+givenName: Admin $ADMIN_UID
 o: $ORGANIZATION
 uid: $ADMIN_UID
 userPassword: $ADMIN_PASS
 pwdReset: FALSE
+memberof: cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC
+memberof: cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC
 
 dn: ou=groups,$ROOT_LDAP_DC
 objectClass: organizationalUnit

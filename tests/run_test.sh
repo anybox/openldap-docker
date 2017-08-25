@@ -104,6 +104,8 @@ function run_ldap {
         -v $CERTIFICAT_VOLUME_NAME:/ssl \
         -e LDAP_CA_CERTIFICATE_PATH="/ssl/ca.crt" \
         -e LDAP_ROOT_PASSWORD="{SSHA}vvcG8bTEFKggJ8J2wRu/JN9x/4jhRuZF" \
+        -e LDAP_DEFAULT_ADMIN_UID="test_default_admin" \
+        -e LDAP_DEFAULT_ADMIN_PASSWORD="{SSHA}dPnmfOhPSY3QrdJ73YH9gQM4Ws2vhuDx" \
         -e LDAP_CERTIFICATE_PATH="/ssl/$LDAP_HOST.crt" \
         -e LDAP_CERTIFICATE_KEY_PATH="/ssl/$LDAP_HOST.key" \
         -e DOMAIN="$DOMAIN" \

@@ -1,7 +1,7 @@
 import os
 
 from contextlib import contextmanager
-from ldap3 import Server, Connection, ALL, MODIFY_REPLACE
+from ldap3 import Server, Connection, ALL, MODIFY_ADD, MODIFY_REPLACE
 from ldap3.extend.standard.modifyPassword import ModifyPassword
 from unittest import TestCase
 
@@ -64,8 +64,8 @@ class LdapTestCase(TestCase):
             'user-admin': {
                 'description': "Authentificated user admin, should be able to "
                                "administrate people/groups/applications",
-                'user_dn': 'uid=tadmin,ou=people,' + ROOT_DC,
-                'password': 'tadminPASS',
+                'user_dn': 'uid=test_default_admin,ou=people,' + ROOT_DC,
+                'password': 'test password',
             },
             'admin': {
                 'description': "Root LDAP admin",
@@ -103,18 +103,20 @@ class LdapTestCase(TestCase):
         ) as root_con:
             root_con.modify(
                 'cn=ldap_people_admin,ou=groups,' + ROOT_DC,
-                {'member': [(MODIFY_REPLACE, [
+                {'member': [(MODIFY_ADD, [
                     cls.users['user-people-admin']['user_dn'],
-                    cls.users['user-admin']['user_dn'],
+                    # already managed throught 00_organization.ldif
+                    # cls.users['user-admin']['user_dn'],
                     cls.users['app-people-admin']['user_dn'],
                     cls.users['app-admin']['user_dn'],
                 ])]}
             )
             root_con.modify(
                 'cn=ldap_apps_admin,ou=groups,' + ROOT_DC,
-                {'member': [(MODIFY_REPLACE, [
+                {'member': [(MODIFY_ADD, [
                     cls.users['user-apps-admin']['user_dn'],
-                    cls.users['user-admin']['user_dn'],
+                    # already managed throught 00_organization.ldif
+                    # cls.users['user-admin']['user_dn'],
                     cls.users['app-apps-admin']['user_dn'],
                     cls.users['app-admin']['user_dn'],
                 ])]}

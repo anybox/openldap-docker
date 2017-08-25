@@ -47,7 +47,7 @@ Options:
     -u ADMIN UID    Default ldap user administrator uid (will be under
                     uid=$LDAP_DEFAULT_ADMIN_UID,ou=people,dc=example,dc=com)
                     (default value: $LDAP_DEFAULT_ADMIN_UID)
-    -p ADMIN PASS   Password for given admin uid $LDAP_DEFAULT_ADMIN_UID
+    -p ADMIN PASS   Password for given admin uid $LDAP_DEFAULT_ADMIN_PASSWORD
                     (default: $LDAP_DEFAULT_ADMIN_PASSWORD)
     -L LOG LEVEL    ldap deamon log level
                     Can also be set through environement variable LDAP_LOG_LEVEL
@@ -120,9 +120,6 @@ function import_files {
         for file in `ls $directory*.ldif`; do
             echo "Import init data: $file"
             slapadd -d $LDAP_LOG_LEVEL -F /etc/openldap/slapd.d/ -l "$file"
-            # memberof overlay appear to work with lapadd but not slapadd
-            # which require ldap client installed
-            # ldapadd -Y EXTERNAL -H ldapi:/// -f "$file"
         done
         if [ "$dir_to_remove" = true ]; then
             rm -r "$directory"
