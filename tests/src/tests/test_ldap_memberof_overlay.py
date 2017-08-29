@@ -331,7 +331,7 @@ class TestLdapMemberOfOverlay(LdapTestCase):
         group_cn = "group-%s" % uuid4()
         group_dn = "cn=%s,ou=groups,%s" % (group_cn, ROOT_DC)
         group2_cn = "group-%s" % uuid4()
-        group2_dn = "cn=%s,ou=groups,%s" % (group_cn, ROOT_DC)
+        group2_dn = "cn=%s,ou=groups,%s" % (group2_cn, ROOT_DC)
         user1_uid = "user-%s" % uuid4()
         user1_dn = "uid=%s,ou=people,%s" % (user1_uid, ROOT_DC)
 
@@ -363,7 +363,11 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             clean()
 
         test_suite = {
-            'anonymous': None,
+            'anonymous': {
+                'assert': self.assertFalse,
+                'run_before_test': prepare,
+                'run_after_test': None,
+            },
             'user': {
                 'assert': self.assertFalse,
                 'run_before_test': prepare,
