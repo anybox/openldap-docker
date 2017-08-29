@@ -31,7 +31,7 @@ Then you have to:
 
 In this chapter I'll give a short how we have organized default
 configuration and rules that are [tests (using python unitest)](
-tests/test_ldap.py)
+tests/src/tests)
 
 Let's say you have configure ``DOMAINE=example.com`` you will get
 the following tree.
@@ -63,7 +63,8 @@ Bellow the list of user me may met:
 
 * Anonymous
 * User account
-* Ldap adminstrator (those linked to ldap_people_admin group)
+* Ldap adminstrator (those linked to ldap_people_admin and/or
+  ldap_apps_admin groups)
 * The root ldap administrator
 * Application/service user account & Groups
 
@@ -102,6 +103,10 @@ They are allowed to:
 * Can update thoses people(users) entries (passwords as well)
 * Create new group entry under ``ou=groups,dc=example,dc=com``
 * Add members in groups
+
+if those users are also member of
+``cn=ldap_apps_admin,ou=groups,dc=example,dc=com`` group they can:
+
 * Create new application entry under
   ``ou=applications,dc=example,dc=com``
 
@@ -123,6 +128,10 @@ Application user account (under
 members ``ou=groups,dc=example,dc=com`` (ie: likes the Apache 
 ``Require ldap-goup`` directive) and read user lists (children of
 ``ou=people,dc=example,dc=com``) to allow to process the search.
+
+If an application account is linked to ``ldap_people_admin`` or
+``ldap_apps_admin`` that account is grant and able to update ldap
+informations.
 
 
 ## Persistent data
@@ -147,22 +156,16 @@ TODO: handle version number diff to handle upgrade between versions
 TODO:
 
 - [ ] config and test 1 master multiple slaves
-- [ ] tool to generate or add application entry (or make possible to
-      administrator to setup application, or add application admin
-      group)
-- [ ] test application link to admin groups
-- [ ] let set admin name & password throught env variables
 - [ ] document certificate access uid:gid (ldap == 666)
-- [ ] manage & document active/inactive users
+- [ ] document active/inactive users
 - [ ] Add volumes? json? to init user data the first time
 - [ ] allow runing batch creation
-- [ ] test password policies
 - [ ] add a tools to generate init user/application/group accounts
+- [ ] test password policies
 - [ ] test restarting CR / test with mapped volume
 - [ ] test upgrade version
 - [ ] http://www.openldap.org/doc/admin24/security.html
 - [ ] automate renew LE CA
-- [ ] split tests in multiple python files
 
 # Tips:
 
