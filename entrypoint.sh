@@ -8,7 +8,7 @@
 # ulimit -n 8192
 
 set -e
-set -x
+set +x
 
 PASS=`< /dev/urandom tr -dc _A-Za-z0-9~\&\(\)\^$%,?\;. | head -c 32;echo`
 SSHA_PASS=`slappasswd -ns $PASS`
