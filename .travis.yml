@@ -1,7 +1,15 @@
 sudo: required
 
+env:
+  global:
+    - LDAP_IMAGE=anybox/openldap
+    - CURRENT_BUILD_LDAP_TAG=latest
+
 services:
   - docker
 
 script:
-- sudo tests/run_test.sh
+  - sudo tests/run_test.sh
+
+after_success:
+  - if [ ! -z "$TRAVIS_PULL_REQUEST" ]; then docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD && docker push $LDAP_IMAGE:$CURRENT_BUILD_LDAP_TAG; fi

@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/anybox/openldap-docker.svg?branch=master
+)](https://travis-ci.org/anybox/openldap-docker)
+
 # docker ldap
 
 This project aims to setup OpenLdap in alpine Docker container.
