@@ -2,6 +2,7 @@ FROM alpine:3.6
 LABEL maintainer Pierre Verkest <pierreverkest84@gmail.com>
 
 ENV OPENLDAP_VERSION 2.4.44-r5
+#ENV OPENLDAP_VERSION 2.4.45-r3
 
 # TODO: make sure those dependencies (openssl gnutls nss cyrus-sasl krb5) are
 # runtime requirement, I'm (Pierre V.) not sure if the documentation
@@ -35,5 +36,4 @@ RUN  chmod 500 /etc/openldap/*.ldif.template.sh \
 
 EXPOSE 389 636
 
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["dumb-init", "--", "/entrypoint.sh"]
