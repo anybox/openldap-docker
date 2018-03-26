@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:3.6
 LABEL maintainer Pierre Verkest <pierreverkest84@gmail.com>
 
 ENV OPENLDAP_VERSION 2.4.44-r5
