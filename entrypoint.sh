@@ -3,14 +3,14 @@
 # PV I'm not sure this issue still true as long we are using docker 1.12 or
 # higher and some version of openLdap has been released since that happen
 # so comment to keep an eye on it in case of memory issue:
-# When not limiting the open file descritors limit, the memory consumption of
+# When not limiting the open file descriptors limit, the memory consumption of
 # slapd is absurdly high. See https://github.com/docker/docker/issues/8231
 # ulimit -n 8192
 
 set -e
 set -x
 
-PASS=`< /dev/urandom tr -dc _A-Za-z0-9~\&\(\)\^$%,?\;. | head -c${1:-32};echo`
+PASS=`< /dev/urandom tr -dc _A-Za-z0-9~\&\(\)\^$%,?\;. | head -c 32;echo`
 SSHA_PASS=`slappasswd -ns $PASS`
 
 LDAP_ROOT_PASSWORD=${LDAP_ROOT_PASSWORD:-$SSHA_PASS}
