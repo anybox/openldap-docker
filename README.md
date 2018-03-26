@@ -15,9 +15,7 @@ requirements:
 
 - DNS point to your ldap server (here **ldap.example.org**)
 - You have a certificate for that domain (``ldap.example.org.crt`` and
-  ``ldap.example.crt.key``), to generate [Let's Encrypt Certificate](
-  https://letsencrypt.org/) you could use [cerbot in docker](
-  https://github.com/petrus-v/certbot)
+  ``ldap.example.crt.key``).
 
 Then you have to:
 
