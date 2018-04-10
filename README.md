@@ -178,6 +178,6 @@ can generate that hash for you to use it securly in you ldif files.
 A way to do is by running ``slappasswd`` using that same image:
 
 ```bash
-docker run -it --rm anybox/openldap slappasswd -s MySecrets
+docker run -it --rm --entrypoint slappasswd anybox/openldap -s MySecrets
 {SSHA}TYtweERxzym/BomeU820EOqoIxJ2X+oT
 ```
