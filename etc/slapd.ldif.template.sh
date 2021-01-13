@@ -55,7 +55,7 @@ CIPHER=${CIPHER:-DEFAULT}
 
 cat << EOF
 #
-# See slapd-config(5) for details on configuration options.
+# See slapd.conf(5) for details on configuration options.
 # This file should NOT be world readable.
 #
 dn: cn=config
@@ -69,8 +69,8 @@ $CA_PATH
 #
 # Define global ACLs to disable default read access.
 #
-olcArgsFile: /var/lib/openldap/run/slapd.args
-olcPidFile: /var/lib/openldap/run/slapd.pid
+olcPidFile: /run/openldap/slapd.pid
+olcArgsFile: /run/openldap/slapd.args
 #
 # Do not enable referrals until AFTER you have a working directory
 # service AND an understanding of referrals.
@@ -88,9 +88,10 @@ objectClass: olcModuleList
 objectClass: top
 cn: module
 olcModulepath: /usr/lib/openldap
-olcModuleload: memberof
-olcModuleload: refint
-olcModuleload: ppolicy
+olcModuleload: memberof.so
+olcModuleload: refint.so
+olcModuleload: ppolicy.so
+olcModuleload: back_mdb.so
 
 dn: cn=schema,cn=config
 objectClass: olcSchemaConfig

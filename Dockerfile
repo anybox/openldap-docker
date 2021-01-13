@@ -1,8 +1,7 @@
-FROM alpine:3.6
+FROM alpine:3.12
 LABEL maintainer Pierre Verkest <pierreverkest84@gmail.com>
 
-ENV OPENLDAP_VERSION 2.4.44-r5
-#ENV OPENLDAP_VERSION 2.4.45-r3
+ENV OPENLDAP_VERSION 2.4.50-r1
 
 # TODO: make sure those dependencies (openssl gnutls nss cyrus-sasl krb5) are
 # runtime requirement, I'm (Pierre V.) not sure if the documentation
@@ -15,10 +14,13 @@ ENV OPENLDAP_VERSION 2.4.44-r5
 # openssl gnutls nss cyrus-sasl krb5
 RUN  adduser -D -H -u 666  ldap \
   && apk add --update \
-             openldap=$OPENLDAP_VERSION \
-             dumb-init \
+  openldap=$OPENLDAP_VERSION \
+  openldap-back-mdb \
+  openldap-overlay-memberof \
+  openldap-overlay-refint \
+  openldap-overlay-ppolicy \
+  dumb-init \
   && rm -rf /var/cache/apk/* \
-  && rm /etc/openldap/*.default \
   && rm /etc/openldap/*.example \
   && rm /etc/openldap/*.ldif \
   && rm /etc/openldap/*.conf \
@@ -32,7 +34,8 @@ VOLUME ["/etc/openldap/slapd.d", "/var/lib/openldap/"]
 
 RUN  chmod 500 /etc/openldap/*.ldif.template.sh \
   && chmod 700 /entrypoint.sh \
-  && chown ldap:ldap -R /var/lib/openldap/run/
+  && mkdir -p /run/openldap/ \
+  && chown ldap:ldap -R /run/openldap/
 
 EXPOSE 389 636
 

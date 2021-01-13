@@ -1,9 +1,9 @@
-FROM python:3-alpine3.6
+FROM python:3.6-alpine
 LABEL maintainer Pierre Verkest <pverkest@anybox.fr>
 
 RUN apk add --update \
-        openldap-clients \
-        dumb-init \
+  openldap-clients \
+  dumb-init \
   && rm -rf /var/cache/apk/* \
   && mkdir -p /usr/src/app
 
