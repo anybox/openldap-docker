@@ -47,7 +47,8 @@ objectClass: olcOverlayConfig
 objectClass: olcRefintConfig
 objectClass: top
 olcOverlay: refint
-olcRefintAttribute: memberOf member
+olcRefintAttribute: memberOf
+olcRefintAttribute: member
 
 dn: olcOverlay=ppolicy,olcDatabase={1}mdb,cn=config
 objectClass: olcConfig
