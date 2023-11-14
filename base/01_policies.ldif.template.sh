@@ -29,6 +29,7 @@ fi
 
 cat << EOF
 # https://linux.die.net/man/5/slapo-ppolicy
+# https://www.openldap.org/doc/admin26/overlays.html#Password%20Policies
 dn: cn=default,ou=policies,$ROOT_LDAP_DC
 objectClass: pwdPolicy
 objectClass: person

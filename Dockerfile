@@ -1,7 +1,7 @@
-FROM alpine:3.13
+FROM alpine:3.18
 LABEL maintainer Pierre Verkest <pierreverkest84@gmail.com>
 
-ENV OPENLDAP_VERSION 2.4.57-r1
+ENV OPENLDAP_VERSION 2.6.4-r3
 
 # TODO: make sure those dependencies (openssl gnutls nss cyrus-sasl krb5) are
 # runtime requirement, I'm (Pierre V.) not sure if the documentation
@@ -21,10 +21,9 @@ RUN  adduser -D -H -u 666  ldap \
   openldap-overlay-ppolicy \
   dumb-init \
   && rm -rf /var/cache/apk/* \
-  && rm /etc/openldap/*.example \
   && rm /etc/openldap/*.ldif \
   && rm /etc/openldap/*.conf \
-  && rm -r /var/lib/openldap/openldap-data/*
+  && rm -rf /var/lib/openldap/openldap-data/*
 
 COPY etc/* /etc/openldap/
 COPY base/*.ldif.template.sh /etc/openldap/root_data/

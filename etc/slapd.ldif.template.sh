@@ -100,7 +100,7 @@ cn: schema
 include: file:///etc/openldap/schema/core.ldif
 include: file:///etc/openldap/schema/cosine.ldif
 include: file:///etc/openldap/schema/inetorgperson.ldif
-include: file:///etc/openldap/schema/ppolicy.ldif
+include: file:///etc/openldap/schema/nis.ldif
 
 # Frontend settings
 #

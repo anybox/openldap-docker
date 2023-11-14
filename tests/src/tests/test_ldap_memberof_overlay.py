@@ -1,4 +1,4 @@
-from ldap3 import MODIFY_REPLACE, MODIFY_DELETE
+from ldap3 import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 from uuid import uuid4
 
 from .features import ldap_connection, LdapTestCase
@@ -7,7 +7,84 @@ from .features import ROOT_DC, ROOT_LDAP_SECRET, ROOT_LDAP_DN
 
 class TestLdapMemberOfOverlay(LdapTestCase):
 
+
+    def test_add_app_member_attribute(self):
+        GROUP_DN = 'cn=fakeapp,ou=groups,' + ROOT_DC
+        USER_DN = 'uid=fakeapp,ou=applications,' + ROOT_DC
+
+        def update_member_attribute(con, context, data):
+            data['new_value'] = "app-%s" % uuid4()
+            return (
+                con.modify(
+                    GROUP_DN,
+                    {'member': [(MODIFY_ADD, [USER_DN])]}
+                ),
+                con.result
+            )
+
+        def remove_member_of():
+            with ldap_connection(
+                    dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
+            ) as con:
+                con.modify(
+                    GROUP_DN,
+                    {
+                        'member': [(
+                            MODIFY_DELETE,
+                            [USER_DN]
+                        )]
+                    }
+                )
+
+        def assertMemberSet(con, context, data):
+            con.search(
+                GROUP_DN, '(objectClass=groupOfNames)', attributes=['member']
+            )
+            self.assertTrue(
+                USER_DN in con.entries[0].member.value,
+                "The user %s couldn't add member %s to the group %s" % (
+                    con.user, USER_DN, GROUP_DN
+
+                ))
+            remove_member_of()
+
+        test_suite = {
+            'anonymous': {'assert': self.assertFalse, },
+            'user': {'assert': self.assertFalse, },
+            'user-people-admin': {
+                'assert': self.assertTrue,
+                'run_after_test': assertMemberSet, 
+            },
+            'user-apps-admin': {'assert': self.assertFalse, },
+            'user-admin': {
+                'assert': self.assertTrue,
+                'run_after_test': assertMemberSet,
+            },
+            'admin': {
+                'assert': self.assertTrue,
+                'run_after_test': assertMemberSet,
+            },
+            'app': {'assert': self.assertFalse, },
+            'app-people-admin': {
+                'assert': self.assertTrue,
+                'run_after_test': assertMemberSet, 
+            },
+            'app-apps-admin': {'assert': self.assertFalse, },
+            'app-admin': {
+                'assert': self.assertTrue,
+                'run_after_test': assertMemberSet, 
+            },
+        }
+
+        self.run_case(
+            update_member_attribute,
+            test_suite,
+            "testing to update group adding member attribute"
+        )
+
     def test_update_app_memberof_attribute(self):
+        # TODO: From this commit following comment is probably over
+        # considering removing rules and fix this test
         # Editing memberof attrs should be forbiden as long `refint overlay
         # <http://www.openldap.org/doc/admin24/
         # overlays.html#Referential%20Integrity>`_ currently is not able to
@@ -56,12 +133,7 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             'user-people-admin': {'assert': self.assertFalse, },
             'user-apps-admin': {'assert': self.assertFalse, },
             'user-admin': {'assert': self.assertFalse, },
-            'admin': {
-                'assert': self.assertTrue,  # ok it's fine if ldap admin do it
-                # This is to detect if at some point it's fine to edit memberof
-                # directly
-                'run_after_test': assertMemberNotSet,
-            },
+            'admin': {'assert': self.assertFalse, },
             'app': {'assert': self.assertFalse, },
             'app-people-admin': {'assert': self.assertFalse, },
             'app-apps-admin': {'assert': self.assertFalse, },
@@ -71,10 +143,12 @@ class TestLdapMemberOfOverlay(LdapTestCase):
         self.run_case(
             update_memberof_attribute,
             test_suite,
-            "testing to update user cn attribute"
+            "testing to update user memberof on app user attribute"
         )
 
     def test_update_people_memberof_attribute(self):
+        # TODO: From this commit following comment is probably over
+        # considering removing rules and fix this test
         # Editing memberof attrs should be forbiden as long `refint overlay
         # <http://www.openldap.org/doc/admin24/
         # overlays.html#Referential%20Integrity>`_ currently is not able to
@@ -113,7 +187,7 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             con.search(
                 GROUP_DN, '(objectClass=groupOfNames)', attributes=['member']
             )
-            self.assertFalse(USER_DN in con.entries[0].member.value)
+            self.assertTrue(USER_DN in con.entries[0].member.value)
             remove_member_of()
 
         test_suite = {
@@ -122,12 +196,7 @@ class TestLdapMemberOfOverlay(LdapTestCase):
             'user-people-admin': {'assert': self.assertFalse, },
             'user-apps-admin': {'assert': self.assertFalse, },
             'user-admin': {'assert': self.assertFalse, },
-            'admin': {
-                'assert': self.assertTrue,  # ok it's fine if ldap admin do it
-                # This is to detect if at some point it's fine to edit memberof
-                # directly
-                'run_after_test': assertMemberNotSet,
-            },
+            'admin': {'assert': self.assertFalse, },
             'app': {'assert': self.assertFalse, },
             'app-people-admin': {'assert': self.assertFalse, },
             'app-apps-admin': {'assert': self.assertFalse, },
@@ -137,7 +206,7 @@ class TestLdapMemberOfOverlay(LdapTestCase):
         self.run_case(
             update_memberof_attribute,
             test_suite,
-            "testing to update user cn attribute"
+            "testing to update user memberof attribute on people user"
         )
 
     def test_rename_user_entry(self):
