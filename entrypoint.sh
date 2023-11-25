@@ -139,7 +139,8 @@ else
         -P $LDAP_ROOT_PASSWORD \
         -D $LDAP_ROOT_DC >> /etc/openldap/slapd.ldif
     /etc/openldap/overlay_settings.ldif.template.sh \
-        -D $LDAP_ROOT_DC  >> /etc/openldap/slapd.ldif
+        -D $LDAP_ROOT_DC  \
+        -u "$LDAP_DEFAULT_ADMIN_UID" >> /etc/openldap/slapd.ldif
 
     echo "import slapd.ldif"
     cat /etc/openldap/slapd.ldif

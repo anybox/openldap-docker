@@ -710,11 +710,11 @@ class TestLdapUpdateEntries(LdapTestCase):
             ) as new_con:
                 read_own_entry(new_con, context, data)
             reset_password(con, context, data)
-            # not sure to understand why the removed
-            # code failed, like if reset password also
-            # disable user to read their own card
-            # but could also some restriction with
-            # multiple open connexion in unittest ?
+            with ldap_connection(
+                dn=context["user_dn"],
+                password=context["password"]
+            ) as new_con:
+                read_own_entry(new_con, context, data)
 
         test_suite = {
             'anonymous': None,

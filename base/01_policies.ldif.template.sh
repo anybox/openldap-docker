@@ -28,6 +28,7 @@ if [[ ! $ROOT_LDAP_DC ]]; then
 fi
 
 cat << EOF
+
 # https://linux.die.net/man/5/slapo-ppolicy
 # https://www.openldap.org/doc/admin26/overlays.html#Password%20Policies
 dn: cn=default,ou=policies,$ROOT_LDAP_DC
@@ -44,7 +45,7 @@ pwdFailureCountInterval: 30
 pwdGraceAuthNLimit: 5
 pwdInHistory: 5
 pwdLockout: TRUE
-pwdLockoutDuration: 0
+pwdLockoutDuration: 60
 # This attribute contains the number of seconds after which a modified password
 # will expire. If this attribute is not present, or if its value is zero (0),
 # then passwords will not expire.
@@ -55,7 +56,7 @@ pwdMinLength: 5
 # If set to TRUE this make possible to ask user to change password while
 # they connect the first time the matter is to make sure we have tool that
 # can handle this behaviour
-pwdMustChange: TRUE
+pwdMustChange: FALSE
 # If set to TRUE users must supply old password while changeing password
 # this is sucks for people that administrate other people that needs to
 # reset password. I havn't find a proper way to do it. Also needs to make
