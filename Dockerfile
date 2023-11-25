@@ -1,7 +1,7 @@
-FROM alpine:3.18
+FROM alpine:20230901
 LABEL maintainer Pierre Verkest <pierreverkest84@gmail.com>
 
-ENV OPENLDAP_VERSION 2.6.4-r3
+ENV OPENLDAP_VERSION 2.6.6-r1
 
 # TODO: make sure those dependencies (openssl gnutls nss cyrus-sasl krb5) are
 # runtime requirement, I'm (Pierre V.) not sure if the documentation

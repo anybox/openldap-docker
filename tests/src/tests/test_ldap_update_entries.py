@@ -1,6 +1,6 @@
 from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
 from uuid import uuid4
-
+from ldap3.core.exceptions import LDAPSessionTerminatedByServerError
 from .features import ldap_connection, LdapTestCase
 from .features import ROOT_DC, ROOT_LDAP_SECRET, ROOT_LDAP_DN
 
@@ -428,7 +428,7 @@ class TestLdapUpdateEntries(LdapTestCase):
             return con.modify(
                 "olcDatabase={1}mdb,cn=config",
                 {'olcAccess': [(MODIFY_ADD, [
-                    '{100}to dn.subtree="ou=people,%s" '
+                    '{110}to dn.one="ou=people,%s" '
                     'by self write' % ROOT_DC
                 ])]}
             ), con.result
@@ -710,11 +710,11 @@ class TestLdapUpdateEntries(LdapTestCase):
             ) as new_con:
                 read_own_entry(new_con, context, data)
             reset_password(con, context, data)
-            # not sure to understand why the removed
-            # code failed, like if reset password also
-            # disable user to read their own card
-            # but could also some restriction with
-            # multiple open connexion in unittest ?
+            with ldap_connection(
+                dn=context["user_dn"],
+                password=context["password"]
+            ) as new_con:
+                read_own_entry(new_con, context, data)
 
         test_suite = {
             'anonymous': None,

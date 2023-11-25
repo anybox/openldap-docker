@@ -121,14 +121,14 @@ class TestLdapRemoveEntries(LdapTestCase):
         test_suite = {
             'anonymous': {'assert': self.assertFalse, },
             'user': {'assert': self.assertFalse, },
-            'user-people-admin': {'assert': self.assertFalse, },
+            'user-people-admin': {'assert': self.assertTrue, },
             'user-apps-admin': {'assert': self.assertFalse, },
-            'user-admin': {'assert': self.assertFalse, },
+            'user-admin': {'assert': self.assertTrue, },
             'admin': {'assert': self.assertTrue, },
             'app': {'assert': self.assertFalse, },
-            'app-people-admin': {'assert': self.assertFalse, },
+            'app-people-admin': {'assert': self.assertTrue, },
             'app-apps-admin': {'assert': self.assertFalse, },
-            'app-admin': {'assert': self.assertFalse, },
+            'app-admin': {'assert': self.assertTrue, },
         }
 
         self.run_case(

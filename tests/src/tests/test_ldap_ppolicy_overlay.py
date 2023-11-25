@@ -38,7 +38,7 @@ class TestLdapPPolicyOverlay(LdapTestCase):
                     root_con.entries[0].pwdPolicySubentry.value
                 )
 
-        def assert_name_not_changed(con, context, data):
+        def assert_pwdsubpolicy_not_changed(con, context, data):
             with ldap_connection(
                     dn=ROOT_LDAP_DN, password=ROOT_LDAP_SECRET
             ) as root_con:
@@ -60,7 +60,7 @@ class TestLdapPPolicyOverlay(LdapTestCase):
             'user': {
                 'assert': self.assertFalse,
                 'run_before_test': prepare_test,
-                'run_after_test': assert_name_not_changed
+                'run_after_test': assert_pwdsubpolicy_not_changed
             },
             'user-people-admin': {
                 'assert': self.assertTrue,
@@ -70,7 +70,7 @@ class TestLdapPPolicyOverlay(LdapTestCase):
             'user-apps-admin': {
                 'assert': self.assertFalse,
                 'run_before_test': prepare_test,
-                'run_after_test': assert_name_not_changed
+                'run_after_test': assert_pwdsubpolicy_not_changed
             },
             'user-admin': {
                 'assert': self.assertTrue,
@@ -81,12 +81,12 @@ class TestLdapPPolicyOverlay(LdapTestCase):
             'app': {
                 'assert': self.assertFalse,
                 'run_before_test': prepare_test,
-                'run_after_test': assert_name_not_changed
+                'run_after_test': assert_pwdsubpolicy_not_changed
             },
             'app-people-admin': {
                 'assert': self.assertFalse,
                 'run_before_test': prepare_test,
-                'run_after_test': assert_name_not_changed
+                'run_after_test': assert_pwdsubpolicy_not_changed
             },
             'app-apps-admin': {
                 'assert': self.assertTrue,

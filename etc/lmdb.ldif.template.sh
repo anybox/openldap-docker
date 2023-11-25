@@ -71,15 +71,15 @@ olcRootPW: $LDAP_PASSWORD
 # anonymous users to authenticate against this attribute, and (implicitly)
 # denying all access to others
 olcAccess: {100}
-  to dn.subtree="ou=people,$ROOT_LDAP_DC" attrs=userPassword
+  to dn.one="ou=people,$ROOT_LDAP_DC" attrs=userPassword
     by self write
     by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" write
     by anonymous auth
     by * none
-# application users and ldap admin group members can not edit user
+# allow admin app member to edit password
 # application's password
 olcAccess: {150}
-  to dn.subtree="ou=applications,$ROOT_LDAP_DC" attrs=userPassword
+  to dn.one="ou=applications,$ROOT_LDAP_DC" attrs=userPassword
     by group.exact="cn=ldap_apps_admin,ou=groups,$ROOT_LDAP_DC" write
     by self read
     by anonymous auth
@@ -98,7 +98,7 @@ olcAccess: {200}
 olcAccess: {300}
   to dn.subtree="ou=people,$ROOT_LDAP_DC"
     by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" write
-    by dn.subtree="ou=applications,$ROOT_LDAP_DC" read
+    by dn.one="ou=applications,$ROOT_LDAP_DC" read
     by self read
     by * none
 olcAccess: {350}
@@ -111,12 +111,13 @@ olcAccess: {350}
 olcAccess: {400}
   to dn.subtree="ou=groups,$ROOT_LDAP_DC"
     by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" write
-    by dn.subtree="ou=applications,$ROOT_LDAP_DC" read
+    by dn.one="ou=applications,$ROOT_LDAP_DC" read
     by * none
-# No one can access to policies they should be test and change from the
+# No one can update policies they should be test and change from the
 # main configuration to avoid create security hole
 olcAccess: {600}
   to dn.subtree="ou=policies,$ROOT_LDAP_DC"
+    by group.exact="cn=ldap_people_admin,ou=groups,$ROOT_LDAP_DC" read
     by * none
 # Allow ldap admin group members to read/write ,$ROOT_LDAP_DC sub tree
 # to helps admins task (display the whole tree in Apache active Directory)
