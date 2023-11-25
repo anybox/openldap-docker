@@ -29,11 +29,11 @@ class TestLdapConnection(TestCase):
             connection.bind(),
             "Connection error %r" % connection.result
         )
-        self.assertEquals(
+        self.assertEqual(
             ROOT_DC,
             serv.info.naming_contexts[0]
         )
-        self.assertEquals(
+        self.assertEqual(
             ['3', ],
             serv.info.supported_ldap_versions
         )
