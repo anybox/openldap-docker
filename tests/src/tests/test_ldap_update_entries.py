@@ -1,6 +1,6 @@
 from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
 from uuid import uuid4
-
+from ldap3.core.exceptions import LDAPSessionTerminatedByServerError
 from .features import ldap_connection, LdapTestCase
 from .features import ROOT_DC, ROOT_LDAP_SECRET, ROOT_LDAP_DN
 
@@ -428,7 +428,7 @@ class TestLdapUpdateEntries(LdapTestCase):
             return con.modify(
                 "olcDatabase={1}mdb,cn=config",
                 {'olcAccess': [(MODIFY_ADD, [
-                    '{100}to dn.subtree="ou=people,%s" '
+                    '{110}to dn.one="ou=people,%s" '
                     'by self write' % ROOT_DC
                 ])]}
             ), con.result
