@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/anybox/openldap-docker.svg?branch=master
-)](https://travis-ci.org/anybox/openldap-docker)
+This repository is archived, please use [gh:apycod/openldap-docker](https://github.com/apycod/openldap-docker)
+
 
 # docker ldap
 
